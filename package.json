@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "./node_modules/.bin/webpack",
+    "build": "webpack",
     "start": "npm run build && npm run serve",
     "serve": "node server/index.js"
   },
