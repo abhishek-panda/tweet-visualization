@@ -7,6 +7,8 @@ const TwitterStream = require('./twitter-streaming');
 
 const twitterStreaming = new TwitterStream();
 
+app.set('port', (process.env.PORT || 7777));
+
 app.use('/',express.static(path.join(__dirname, '..','public')));
 
 io.on('connection', function (socket){
@@ -19,6 +21,6 @@ io.on('connection', function (socket){
 
 });
 
-http.listen(7777, function() {
-  console.log("Listening on port 7777")
+http.listen(app.get('port'), function() {
+  console.log("Listening on port ", app.get('port'))
 });
