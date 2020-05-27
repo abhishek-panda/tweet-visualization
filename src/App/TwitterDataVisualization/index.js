@@ -55,14 +55,6 @@ export default class TwitterDataVisualization extends React.Component {
             .datum(meshData)
             .attr("d", path)
             .attr("class", "coast");
-        
-        svg.on('click', () => {
-            const position = d3.mouse(svg.node());
-            const x = position[0];
-            const y = position[1];
-            this.drawRipple(svg, x, y);
-            this.drawTwitterBird(svg, x, y);
-        });
     }
 
     addDataElements (tweet = {}) {
