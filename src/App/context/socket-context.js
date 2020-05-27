@@ -15,7 +15,7 @@ export default class SocketContextProvider extends Component {
     }
 
     componentDidMount() {
-        this.socket = io('http://localhost:7777/', {
+        this.socket = io(window.location.origin, {
             autoConnect : false
         });
         this.socket.on('connect', () => {
