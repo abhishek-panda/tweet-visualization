@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack",
-    "start": "npm run build && npm run serve",
-    "serve": "node server/index.js"
+    "start": "node server/index.js"
   },
   "author": "",
   "license": "ISC",
