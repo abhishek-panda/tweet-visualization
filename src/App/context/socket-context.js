@@ -9,7 +9,8 @@ export default class SocketContextProvider extends Component {
         super();
         this.state = {
             isConnectionOpen : false,
-            tweet: null
+            tweet: null,
+            onlineUser: 0
         }
         this.toggleSocketConnection = this.toggleSocketConnection.bind(this);
     }
@@ -19,14 +20,26 @@ export default class SocketContextProvider extends Component {
             autoConnect : false
         });
         this.socket.on('connect', () => {
-            this.setState({ isConnectionOpen: this.socket.connected });
+            this.setState({ 
+                isConnectionOpen: this.socket.connected,
+                tweet: null,
+            });
         });
         this.socket.on('disconnect', () => {
-            this.setState({ isConnectionOpen: this.socket.connected });
+            this.setState(prevState => {
+                return { 
+                    isConnectionOpen: this.socket.connected,
+                    tweet: null,
+                    onlineUser : prevState.onlineUser - 1
+                }
+            });
         });
         this.socket.on('new-tweet', (data) => {
             this.setState({ tweet: data });
-        })
+        });
+        this.socket.on('userstats', data => {
+            this.setState({ onlineUser: data});
+        });
     }
 
     componentWillUnmount() {
@@ -44,8 +57,9 @@ export default class SocketContextProvider extends Component {
     }
     
     render() {
-        const { isConnectionOpen, tweet } = this.state;
+        const { isConnectionOpen, tweet, onlineUser } = this.state;
         const value = {
+            onlineUser,
             isConnectionOpen,
             tweet,
             toggleSocketConnection: this.toggleSocketConnection,

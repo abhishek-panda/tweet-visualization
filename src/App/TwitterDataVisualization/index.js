@@ -3,7 +3,6 @@ import * as d3 from 'd3';
 import _get from 'lodash/get';
 import * as topojson from "topojson-client";
 
-//import { indiaStates } from './india-states'
 import { world } from './world';
 import { SocketContext } from '../context/socket-context';
 
@@ -13,8 +12,8 @@ export default class TwitterDataVisualization extends React.Component {
     constructor() {
         super();
         this.domElem = React.createRef();
-        this.height = window.innerHeight;
-        this.width = window.innerWidth;
+        this.height = 916;
+        this.width = 956;
     }
 
     componentDidMount () {
