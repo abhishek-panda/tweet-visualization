@@ -34,7 +34,6 @@ const Image = styled.img`
 
 const Item = styled.div`
    cursor: pointer;
-   border: 1px solid;
    margin: 5px 0px;
    border-radius: 3px;
    box-shadow: 0 0 black;
@@ -43,6 +42,7 @@ const Item = styled.div`
    display: flex;
    height: 50px;
    align-items: center;
+   border: ${props => props.active ? '2px solid red' : 'none'};
 `;
 
 const Text = styled.span`
@@ -54,7 +54,7 @@ const Text = styled.span`
 
 export const Tweet = (props) => {
    return (
-      <Item onClick={props.clickHandler}>
+      <Item onClick={props.clickHandler} active={props.active}>
          <Image src={twitterIcon} />
          <Text>{props.data}</Text>
       </Item>

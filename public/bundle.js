@@ -2443,9 +2443,12 @@ var SocketContextProvider = function (_Component) {
         _this.state = {
             isConnectionOpen: false,
             tweet: null,
-            onlineUser: 0
+            onlineUser: 0,
+            hoveredTweet: null
         };
         _this.toggleSocketConnection = _this.toggleSocketConnection.bind(_this);
+        _this.updateHoveredTweet = _this.updateHoveredTweet.bind(_this);
+        _this.getHoveredTweet = _this.getHoveredTweet.bind(_this);
         return _this;
     }
 
@@ -2480,6 +2483,16 @@ var SocketContextProvider = function (_Component) {
             });
         }
     }, {
+        key: 'updateHoveredTweet',
+        value: function updateHoveredTweet(data) {
+            this.setState({ hoveredTweet: data });
+        }
+    }, {
+        key: 'getHoveredTweet',
+        value: function getHoveredTweet() {
+            return this.state.hoveredTweet;
+        }
+    }, {
         key: 'componentWillUnmount',
         value: function componentWillUnmount() {
             if (this.socket.connected) {
@@ -2507,7 +2520,9 @@ var SocketContextProvider = function (_Component) {
                 onlineUser: onlineUser,
                 isConnectionOpen: isConnectionOpen,
                 tweet: tweet,
-                toggleSocketConnection: this.toggleSocketConnection
+                toggleSocketConnection: this.toggleSocketConnection,
+                updateHoveredTweet: this.updateHoveredTweet,
+                getHoveredTweet: this.getHoveredTweet
             };
             return _react2.default.createElement(
                 SocketContext.Provider,
@@ -52113,6 +52128,8 @@ var TwitterDataVisualization = function (_React$Component) {
         key: 'addDataElements',
         value: function addDataElements() {
             var tweet = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+            var updateHoveredTweet = arguments[1];
+            var getHoveredTweet = arguments[2];
 
             var places = (0, _get3.default)(tweet, 'includes.places', []);
             var coordinates = (0, _get3.default)(places, '[0].geo.bbox', []);
@@ -52122,7 +52139,46 @@ var TwitterDataVisualization = function (_React$Component) {
                     latitude = _coordinates[1];
 
                 var position = this.projection([longitude, latitude]);
-                this.svg.append("circle").attr("cx", position[0]).attr("cy", position[1]).attr("r", 2).style("fill", "red").style("opacity", 1);
+
+                var onClickHandler = function onClickHandler() {
+                    var r = void 0;
+                    var toUpdate = void 0;
+                    var item = void 0;
+                    var hoveredTweet = getHoveredTweet();
+                    if (hoveredTweet) {
+                        if (hoveredTweet.id !== this.id) {
+                            toUpdate = null;
+                            r = 2;
+                            item = hoveredTweet.item;
+                            d3.select(item).attr("r", r);
+                            updateHoveredTweet(toUpdate);
+                            toUpdate = {
+                                id: this.id,
+                                item: this
+                            };
+                            r = 5;
+                            item = this;
+                            d3.select(item).attr("r", r);
+                            updateHoveredTweet(toUpdate);
+                        } else {
+                            toUpdate = null;
+                            r = 2;
+                            d3.select(hoveredTweet.item).attr("r", r);
+                            updateHoveredTweet(toUpdate);
+                        }
+                    } else {
+                        toUpdate = {
+                            id: this.id,
+                            item: this
+                        };
+                        r = 5;
+                        item = this;
+                        d3.select(item).attr("r", r);
+                        updateHoveredTweet(toUpdate);
+                    }
+                };
+
+                this.svg.append("circle").attr("id", tweet.data.id).attr("cx", position[0]).attr("cy", position[1]).attr("r", 2).on("click", onClickHandler).style("fill", "red").style("opacity", 1).style("cursor", "pointer");
                 this.drawRipple(this.svg, position[0], position[1]);
                 this.drawTwitterBird(this.svg, position[0], position[1]);
             }
@@ -52162,10 +52218,12 @@ var TwitterDataVisualization = function (_React$Component) {
                 _socketContext.SocketContext.Consumer,
                 null,
                 function (context) {
-                    var tweet = context.tweet;
+                    var tweet = context.tweet,
+                        updateHoveredTweet = context.updateHoveredTweet,
+                        getHoveredTweet = context.getHoveredTweet;
 
                     if (_this2.svg && tweet) {
-                        _this2.addDataElements(tweet);
+                        _this2.addDataElements(tweet, updateHoveredTweet, getHoveredTweet);
                     }
                     return _react2.default.createElement('svg', { ref: _this2.domElem });
                 }
@@ -69000,7 +69058,8 @@ var ScrollData = function (_Component) {
                         _socketContext.SocketContext.Consumer,
                         null,
                         function (context) {
-                            var tweet = context.tweet;
+                            var tweet = context.tweet,
+                                getHoveredTweet = context.getHoveredTweet;
 
                             if (tweet) {
                                 _this2.tweets.unshift(tweet);
@@ -69010,7 +69069,9 @@ var ScrollData = function (_Component) {
                                     author_id = _tweet$data.author_id,
                                     tweet_id = _tweet$data.id;
 
-                                return _react2.default.createElement(_styles.Tweet, { key: tweet_id, data: tweet.data.text,
+                                var hoveredTweet = getHoveredTweet();
+                                var isActive = hoveredTweet && hoveredTweet.id === tweet_id;
+                                return _react2.default.createElement(_styles.Tweet, { key: tweet_id, data: tweet.data.text, active: isActive,
                                     clickHandler: function clickHandler() {
                                         _this2.clickHandler(author_id, tweet_id);
                                     } });
@@ -69043,7 +69104,7 @@ var _templateObject = _taggedTemplateLiteral(['\n   width: 43%;\n'], ['\n   widt
     _templateObject2 = _taggedTemplateLiteral(['\n   width: 100%;\n   height: 50px;\n   position: fixed;\n   color: white;\n   background: #0b98ba;\n   font-size: 20px;\n   font-weight: bold;\n   padding: 0 10px;\n   line-height: 50px;\n   box-shadow: 0px 2px 4px #888888;\n'], ['\n   width: 100%;\n   height: 50px;\n   position: fixed;\n   color: white;\n   background: #0b98ba;\n   font-size: 20px;\n   font-weight: bold;\n   padding: 0 10px;\n   line-height: 50px;\n   box-shadow: 0px 2px 4px #888888;\n']),
     _templateObject3 = _taggedTemplateLiteral(['\n   position: relative;\n   top: 50px;\n   height: calc(100vh - 50px);\n   overflow-y: scroll;\n'], ['\n   position: relative;\n   top: 50px;\n   height: calc(100vh - 50px);\n   overflow-y: scroll;\n']),
     _templateObject4 = _taggedTemplateLiteral(['\n   height: 32px;\n   width: 32px;\n   padding: 0 10px;\n'], ['\n   height: 32px;\n   width: 32px;\n   padding: 0 10px;\n']),
-    _templateObject5 = _taggedTemplateLiteral(['\n   cursor: pointer;\n   border: 1px solid;\n   margin: 5px 0px;\n   border-radius: 3px;\n   box-shadow: 0 0 black;\n   background-color: #2b629e;\n   color: white;\n   display: flex;\n   height: 50px;\n   align-items: center;\n'], ['\n   cursor: pointer;\n   border: 1px solid;\n   margin: 5px 0px;\n   border-radius: 3px;\n   box-shadow: 0 0 black;\n   background-color: #2b629e;\n   color: white;\n   display: flex;\n   height: 50px;\n   align-items: center;\n']),
+    _templateObject5 = _taggedTemplateLiteral(['\n   cursor: pointer;\n   margin: 5px 0px;\n   border-radius: 3px;\n   box-shadow: 0 0 black;\n   background-color: #2b629e;\n   color: white;\n   display: flex;\n   height: 50px;\n   align-items: center;\n   border: ', ';\n'], ['\n   cursor: pointer;\n   margin: 5px 0px;\n   border-radius: 3px;\n   box-shadow: 0 0 black;\n   background-color: #2b629e;\n   color: white;\n   display: flex;\n   height: 50px;\n   align-items: center;\n   border: ', ';\n']),
     _templateObject6 = _taggedTemplateLiteral(['\n   height: 30px;\n   overflow: hidden;\n   white-space: nowrap;\n   text-overflow: ellipsis;\n'], ['\n   height: 30px;\n   overflow: hidden;\n   white-space: nowrap;\n   text-overflow: ellipsis;\n']);
 
 var _react = __webpack_require__(9);
@@ -69070,14 +69131,16 @@ var ScrollView = exports.ScrollView = _styledComponents2.default.div(_templateOb
 
 var Image = _styledComponents2.default.img(_templateObject4);
 
-var Item = _styledComponents2.default.div(_templateObject5);
+var Item = _styledComponents2.default.div(_templateObject5, function (props) {
+   return props.active ? '2px solid red' : 'none';
+});
 
 var Text = _styledComponents2.default.span(_templateObject6);
 
 var Tweet = exports.Tweet = function Tweet(props) {
    return _react2.default.createElement(
       Item,
-      { onClick: props.clickHandler },
+      { onClick: props.clickHandler, active: props.active },
       _react2.default.createElement(Image, { src: _twitter_64x2.default }),
       _react2.default.createElement(
          Text,

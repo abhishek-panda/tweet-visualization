@@ -56,19 +56,60 @@ export default class TwitterDataVisualization extends React.Component {
             .attr("class", "coast");
     }
 
-    addDataElements (tweet = {}) {
+    addDataElements (tweet = {}, updateHoveredTweet, getHoveredTweet ) {
         const places = _get(tweet, 'includes.places', []);
         const coordinates = _get(places, '[0].geo.bbox', []);
         if(coordinates.length) {
             const [longitude, latitude] = coordinates;
-            const position = this.projection([longitude, latitude])
-            this.svg
-                .append("circle")
+            const position = this.projection([longitude, latitude]);
+
+            const onClickHandler = function () {
+                let r;
+                let toUpdate;
+                let item;
+                const hoveredTweet = getHoveredTweet();
+                if (hoveredTweet) {
+                    if (hoveredTweet.id !== this.id) {
+                        toUpdate = null;
+                        r = 2;
+                        item = hoveredTweet.item;
+                        d3.select(item).attr("r", r);
+                        updateHoveredTweet(toUpdate);
+                        toUpdate = {
+                            id: this.id,
+                            item: this
+                        };
+                        r = 5;
+                        item = this;
+                        d3.select(item).attr("r", r);
+                        updateHoveredTweet(toUpdate);
+                    } else {
+                        toUpdate = null;
+                        r = 2;
+                        d3.select(hoveredTweet.item).attr("r", r);
+                        updateHoveredTweet(toUpdate);
+                    }
+                } else {
+                    toUpdate = {
+                        id: this.id,
+                        item: this
+                    };
+                    r = 5;
+                    item = this;
+                    d3.select(item).attr("r", r);
+                    updateHoveredTweet(toUpdate);
+                }
+            }
+
+            this.svg.append("circle")
+                .attr("id", tweet.data.id)
                 .attr("cx", position[0])
                 .attr("cy", position[1])
                 .attr("r", 2)
+                .on("click", onClickHandler)
                 .style("fill", "red")
-                .style("opacity", 1);
+                .style("opacity", 1)
+                .style("cursor", "pointer");
             this.drawRipple(this.svg, position[0], position[1]);
             this.drawTwitterBird(this.svg,  position[0], position[1]);
         }
@@ -134,9 +175,9 @@ export default class TwitterDataVisualization extends React.Component {
         return (
             <SocketContext.Consumer>
             {(context) => {
-                const { tweet } = context;
+                const { tweet, updateHoveredTweet, getHoveredTweet } = context;
                 if(this.svg && tweet) {
-                    this.addDataElements(tweet);
+                    this.addDataElements(tweet, updateHoveredTweet, getHoveredTweet );
                 }
                 return <svg ref={this.domElem} />
             }}

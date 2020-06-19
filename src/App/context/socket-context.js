@@ -10,9 +10,12 @@ export default class SocketContextProvider extends Component {
         this.state = {
             isConnectionOpen : false,
             tweet: null,
-            onlineUser: 0
+            onlineUser: 0,
+            hoveredTweet: null
         }
         this.toggleSocketConnection = this.toggleSocketConnection.bind(this);
+        this.updateHoveredTweet = this.updateHoveredTweet.bind(this);
+        this.getHoveredTweet = this.getHoveredTweet.bind(this);
     }
 
     componentDidMount() {
@@ -42,6 +45,14 @@ export default class SocketContextProvider extends Component {
         });
     }
 
+    updateHoveredTweet(data){
+        this.setState({ hoveredTweet: data });
+    }
+
+    getHoveredTweet() {
+        return this.state.hoveredTweet; 
+    }
+
     componentWillUnmount() {
         if(this.socket.connected) {
             this.socket.close();
@@ -63,6 +74,8 @@ export default class SocketContextProvider extends Component {
             isConnectionOpen,
             tweet,
             toggleSocketConnection: this.toggleSocketConnection,
+            updateHoveredTweet: this.updateHoveredTweet,
+            getHoveredTweet: this.getHoveredTweet
         };
         return (
             <SocketContext.Provider value={value} >

@@ -27,13 +27,15 @@ export default class ScrollData extends Component {
                 <ScrollView>
                     <SocketContext.Consumer>
                         {(context) => {
-                            const { tweet } = context;
+                            const { tweet, getHoveredTweet } = context;
                             if (tweet) {
                                 this.tweets.unshift(tweet);
                             }
                             return this.tweets.map(tweet => {
                                 const { author_id , id : tweet_id} = tweet.data;
-                                return <Tweet key={tweet_id} data={tweet.data.text}
+                                const hoveredTweet = getHoveredTweet();
+                                const isActive = hoveredTweet && hoveredTweet.id === tweet_id;
+                                return <Tweet key={tweet_id} data={tweet.data.text} active={isActive}
                                              clickHandler={() => { this.clickHandler(author_id, tweet_id)}} />
                             });
                         }}
