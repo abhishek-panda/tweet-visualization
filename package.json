@@ -6,7 +6,8 @@
   "scripts": {
     "build": "webpack",
     "start": "node server/index.js",
-    "local": "npm run build && npm start"
+    "local": "npm run build && npm start",
+    "json:server": "json-server --watch db.json --port $(node -e 'console.log(process.env.PORT || 9098)')"
   },
   "author": "",
   "license": "ISC",
